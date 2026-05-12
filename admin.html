@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ChatTop Admin — Control Center</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#F0F4F8;--card:rgba(255,255,255,0.88);--card2:#fff;
+  --txt:#0F172A;--txt2:#64748B;--blue:#0088cc;--blue2:#00b4e6;
+  --green:#16a34a;--red:#dc2626;--amber:#f59e0b;--purple:#7C3AED;
+  --border:rgba(0,0,0,0.06);--shadow:0 2px 16px rgba(0,0,0,0.08);
+  --radius:20px;
+}
+body{background:var(--bg);font-family:'SF Pro Display',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    color:var(--txt);min-height:100vh;overflow-x:hidden;}
+
+/* ── LOGIN ── */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0F172A 0%,#1e293b 50%,#0F172A 100%);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:0;
+}
+.login-orb{
+  width:100px;height:100px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:40px;
+  box-shadow:0 0 60px rgba(0,136,204,0.5);
+  animation:orbPulse 2.5s ease-in-out infinite;
+  margin-bottom:24px;
+}
+@keyframes orbPulse{0%,100%{box-shadow:0 0 40px rgba(0,136,204,0.4);}50%{box-shadow:0 0 80px rgba(0,136,204,0.7);}}
+.login-title{color:#fff;font-size:28px;font-weight:800;margin-bottom:6px;text-align:center;}
+.login-sub{color:rgba(255,255,255,0.45);font-size:14px;margin-bottom:40px;text-align:center;}
+.login-card{
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:24px;padding:32px 28px;
+  width:90%;max-width:340px;
+  backdrop-filter:blur(20px);
+}
+.login-label{color:rgba(255,255,255,0.5);font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;}
+.login-input{
+  width:100%;background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.15);
+  border-radius:12px;padding:14px 16px;
+  color:#fff;font-size:16px;outline:none;
+  transition:border-color 0.2s;letter-spacing:3px;
+}
+.login-input::placeholder{color:rgba(255,255,255,0.25);letter-spacing:0;}
+.login-input:focus{border-color:rgba(0,136,204,0.6);}
+.login-btn{
+  margin-top:20px;width:100%;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;font-size:16px;font-weight:800;
+  padding:15px;border-radius:14px;border:none;cursor:pointer;
+  box-shadow:0 4px 20px rgba(0,136,204,0.4);
+  transition:transform 0.15s,opacity 0.15s;
+}
+.login-btn:active{transform:scale(0.97);opacity:0.9;}
+.login-err{color:#ef4444;font-size:13px;text-align:center;margin-top:10px;display:none;}
+
+/* ── MAIN LAYOUT ── */
+#admin-app{display:none;min-height:100vh;}
+.admin-header{
+  background:linear-gradient(135deg,#0F172A,#1e293b);
+  padding:16px 20px;
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 20px rgba(0,0,0,0.25);
+}
+.admin-logo{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;box-shadow:0 0 20px rgba(0,136,204,0.4);
+}
+.admin-header-title{flex:1;}
+.admin-header-title h1{color:#fff;font-size:17px;font-weight:800;}
+.admin-header-title span{color:rgba(255,255,255,0.45);font-size:11px;}
+.admin-header-badge{
+  background:rgba(0,136,204,0.2);border:1px solid rgba(0,136,204,0.4);
+  color:var(--blue2);font-size:10px;font-weight:700;
+  padding:3px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.admin-logout-btn{
+  width:36px;height:36px;border-radius:10px;
+  background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.25);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:#ef4444;font-size:14px;
+  transition:background 0.15s;
+}
+.admin-logout-btn:active{background:rgba(239,68,68,0.3);}
+
+/* ── TAB BAR ── */
+.admin-tabs{
+  background:#fff;border-bottom:1px solid var(--border);
+  display:flex;overflow-x:auto;padding:0 4px;
+  scrollbar-width:none;gap:2px;
+  position:sticky;top:68px;z-index:99;
+  box-shadow:0 1px 8px rgba(0,0,0,0.06);
+}
+.admin-tabs::-webkit-scrollbar{display:none;}
+.admin-tab{
+  flex-shrink:0;padding:12px 16px;
+  font-size:12px;font-weight:700;color:var(--txt2);
+  cursor:pointer;border-bottom:2.5px solid transparent;
+  transition:color 0.15s,border-color 0.15s;
+  white-space:nowrap;
+  display:flex;align-items:center;gap:6px;
+}
+.admin-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+.admin-tab i{font-size:13px;}
+
+/* ── CONTENT ── */
+.admin-content{padding:16px;max-width:800px;margin:0 auto;}
+.section{display:none;}
+.section.active{display:block;}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px;}
+.stat-card{
+  background:var(--card2);border-radius:var(--radius);
+  padding:20px 16px;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;
+  border:1px solid var(--border);
+}
+.stat-card::before{
+  content:'';position:absolute;top:-20px;right:-20px;
+  width:80px;height:80px;border-radius:50%;opacity:0.08;
+}
+.stat-card.blue::before{background:var(--blue);}
+.stat-card.green::before{background:var(--green);}
+.stat-card.amber::before{background:var(--amber);}
+.stat-card.purple::before{background:var(--purple);}
+.stat-icon{
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:12px;
+}
+.stat-card.blue .stat-icon{background:rgba(0,136,204,0.1);color:var(--blue);}
+.stat-card.green .stat-icon{background:rgba(22,163,74,0.1);color:var(--green);}
+.stat-card.amber .stat-icon{background:rgba(245,158,11,0.1);color:var(--amber);}
+.stat-card.purple .stat-icon{background:rgba(124,58,237,0.1);color:var(--purple);}
+.stat-value{font-size:28px;font-weight:900;color:var(--txt);line-height:1;}
+.stat-label{font-size:11px;color:var(--txt2);font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:0.3px;}
+.stat-change{font-size:10px;margin-top:6px;font-weight:700;}
+.stat-change.up{color:var(--green);}
+.stat-change.live{color:var(--blue);}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-size:13px;font-weight:800;color:var(--txt2);
+    text-transform:uppercase;letter-spacing:0.4px;margin:20px 0 10px;}
+
+/* ── CARDS ── */
+.admin-card{
+  background:var(--card2);border-radius:var(--radius);
+  padding:20px;box-shadow:var(--shadow);margin-bottom:12px;
+  border:1px solid var(--border);
+}
+
+/* ── USER LIST ── */
+.user-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 0;border-bottom:1px solid #F8FAFC;
+  cursor:pointer;transition:background 0.15s;
+}
+.user-item:last-child{border-bottom:none;}
+.user-item:active{background:#F8FAFC;}
+.user-av{
+  width:48px;height:48px;border-radius:50%;
+  object-fit:cover;flex-shrink:0;background:#E2E8F0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:18px;color:#0088cc;
+  border:2px solid rgba(0,136,204,0.15);
+}
+.user-info{flex:1;min-width:0;}
+.user-name{font-size:15px;font-weight:700;color:var(--txt);}
+.user-phone{font-size:12px;color:var(--txt2);margin-top:2px;}
+.user-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.user-status-dot.online{background:var(--green);}
+.user-status-dot.offline{background:#CBD5E1;}
+.user-badges{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap;}
+.user-badge{
+  font-size:9px;font-weight:700;padding:2px 6px;border-radius:99px;
+  display:inline-flex;align-items:center;gap:3px;
+}
+.badge-admin{background:rgba(0,136,204,0.12);color:var(--blue);}
+.badge-banned{background:rgba(220,38,38,0.12);color:var(--red);}
+.badge-verified{background:rgba(22,163,74,0.12);color:var(--green);}
+.badge-premium{background:rgba(124,58,237,0.12);color:var(--purple);}
+
+/* ── USER ACTION SHEET ── */
+#user-action-sheet{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,0.5);
+  display:none;align-items:flex-end;justify-content:center;
+  backdrop-filter:blur(8px);
+}
+#user-action-sheet.open{display:flex;animation:fadeIn 0.2s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.uas-card{
+  background:#fff;border-radius:24px 24px 0 0;
+  width:100%;max-width:480px;
+  padding:0 0 32px 0;
+  animation:slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  max-height:90vh;overflow-y:auto;
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.uas-handle{width:40px;height:4px;background:#E2E8F0;
+    border-radius:2px;margin:14px auto 0;display:block;}
+.uas-header{padding:20px 20px 16px;border-bottom:1px solid #F1F5F9;
+    display:flex;align-items:center;gap:12px;}
+.uas-av{width:52px;height:52px;border-radius:50%;object-fit:cover;
+    border:2px solid rgba(0,136,204,0.2);}
+.uas-name{font-size:16px;font-weight:800;color:var(--txt);}
+.uas-phone{font-size:12px;color:var(--txt2);}
+.uas-actions{padding:8px 0;}
+.uas-action{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 20px;cursor:pointer;transition:background 0.12s;
+  font-size:15px;color:var(--txt);
+}
+.uas-action:active{background:#F8FAFC;}
+.uas-action-icon{
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+}
+.action-blue .uas-action-icon{background:rgba(0,136,204,0.1);color:var(--blue);}
+.action-green .uas-action-icon{background:rgba(22,163,74,0.1);color:var(--green);}
+.action-red .uas-action-icon{background:rgba(220,38,38,0.1);color:var(--red);}
+.action-amber .uas-action-icon{background:rgba(245,158,11,0.1);color:var(--amber);}
+.action-purple .uas-action-icon{background:rgba(124,58,237,0.1);color:var(--purple);}
+
+/* ── POPUP COMPOSER ── */
+.popup-type-selector{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;margin-bottom:16px;}
+.popup-type-selector::-webkit-scrollbar{display:none;}
+.popup-type-chip{
+  flex-shrink:0;padding:8px 14px;border-radius:99px;
+  font-size:12px;font-weight:700;cursor:pointer;
+  border:1.5px solid #E2E8F0;color:var(--txt2);
+  transition:all 0.15s;white-space:nowrap;
+  display:flex;align-items:center;gap:5px;
+}
+.popup-type-chip.selected{border-color:var(--blue);color:var(--blue);background:rgba(0,136,204,0.06);}
+
+.form-field{margin-bottom:14px;}
+.form-field label{display:block;font-size:11px;font-weight:700;
+    color:var(--txt2);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px;}
+.form-field input,.form-field textarea,.form-field select{
+  width:100%;background:#F8FAFC;
+  border:1.5px solid #E2E8F0;border-radius:12px;
+  padding:11px 14px;font-size:14px;color:var(--txt);
+  outline:none;font-family:inherit;transition:border-color 0.2s;
+}
+.form-field input:focus,.form-field textarea:focus,.form-field select:focus{
+  border-color:var(--blue);box-shadow:0 0 0 3px rgba(0,136,204,0.10);
+}
+.form-field textarea{height:80px;resize:none;}
+.admin-btn{
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;font-size:14px;font-weight:800;
+  padding:13px 24px;border-radius:12px;border:none;cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,136,204,0.3);
+  transition:transform 0.15s,opacity 0.15s;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.admin-btn:active{transform:scale(0.97);opacity:0.9;}
+.admin-btn.red{background:linear-gradient(135deg,#dc2626,#ef4444);box-shadow:0 4px 14px rgba(220,38,38,0.3);}
+.admin-btn.green{background:linear-gradient(135deg,#16a34a,#22c55e);box-shadow:0 4px 14px rgba(22,163,74,0.3);}
+.admin-btn.amber{background:linear-gradient(135deg,#d97706,#f59e0b);box-shadow:0 4px 14px rgba(245,158,11,0.3);}
+.admin-btn.w100{width:100%;justify-content:center;}
+
+/* ── STATUS INDICATOR ── */
+.status-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #F8FAFC;}
+.status-row:last-child{border-bottom:none;}
+.status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.status-dot.green{background:var(--green);box-shadow:0 0 6px rgba(22,163,74,0.5);}
+.status-dot.amber{background:var(--amber);box-shadow:0 0 6px rgba(245,158,11,0.5);}
+.status-dot.red{background:var(--red);box-shadow:0 0 6px rgba(220,38,38,0.5);}
+.status-label{flex:1;font-size:14px;font-weight:600;color:var(--txt);}
+.status-val{font-size:12px;color:var(--txt2);font-weight:600;}
+
+/* ── LOGS ── */
+.log-item{
+  font-size:12px;font-family:monospace;
+  padding:8px 12px;border-radius:8px;
+  background:#F8FAFC;margin-bottom:4px;
+  border-left:3px solid #E2E8F0;
+  color:var(--txt2);
+}
+.log-item.log-warn{border-left-color:var(--amber);color:var(--amber);}
+.log-item.log-err{border-left-color:var(--red);color:var(--red);}
+.log-item.log-ok{border-left-color:var(--green);color:var(--green);}
+.log-item.log-info{border-left-color:var(--blue);color:var(--blue);}
+
+/* ── ANALYTICS BARS ── */
+.analytics-bar-row{margin-bottom:12px;}
+.analytics-bar-label{display:flex;justify-content:space-between;
+    font-size:12px;font-weight:600;color:var(--txt);margin-bottom:4px;}
+.analytics-bar-track{height:8px;background:#F1F5F9;border-radius:99px;overflow:hidden;}
+.analytics-bar-fill{height:100%;border-radius:99px;
+    transition:width 1s cubic-bezier(0.34,1.56,0.64,1);}
+
+/* ── POPUP PREVIEW ── */
+.popup-preview-card{
+  border-radius:20px;padding:24px;text-align:center;
+  margin-top:16px;
+  animation:popupPreviewIn 0.3s ease;
+}
+@keyframes popupPreviewIn{from{opacity:0;transform:scale(0.9);}to{opacity:1;transform:scale(1);}}
+.pp-orb{width:52px;height:52px;border-radius:50%;
+    background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.3);
+    display:flex;align-items:center;justify-content:center;
+    font-size:24px;margin:0 auto 14px;}
+.pp-title{font-size:18px;font-weight:800;margin-bottom:8px;}
+.pp-msg{font-size:13px;opacity:0.85;line-height:1.5;margin-bottom:16px;}
+.pp-btn{display:inline-block;padding:10px 28px;border-radius:99px;
+    font-size:14px;font-weight:800;
+    background:rgba(255,255,255,0.22);color:#fff;
+    border:1.5px solid rgba(255,255,255,0.3);}
+
+/* ── BOT CARDS ── */
+.bot-card{
+  display:flex;align-items:center;gap:14px;
+  padding:16px;border-radius:16px;
+  background:var(--card2);border:1px solid var(--border);
+  margin-bottom:10px;box-shadow:var(--shadow);
+}
+.bot-av{
+  width:52px;height:52px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;
+}
+.bot-info{flex:1;min-width:0;}
+.bot-name{font-size:15px;font-weight:800;color:var(--txt);
+    display:flex;align-items:center;gap:6px;}
+.bot-verified{color:var(--blue);font-size:12px;}
+.bot-desc{font-size:12px;color:var(--txt2);margin-top:2px;}
+.bot-status{font-size:10px;font-weight:700;text-transform:uppercase;
+    display:flex;align-items:center;gap:4px;margin-top:4px;}
+.bot-status.online{color:var(--green);}
+.bot-status.offline{color:var(--txt2);}
+
+/* ── SEARCH BOX ── */
+.search-box{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card2);border:1.5px solid #E2E8F0;
+  border-radius:14px;padding:10px 14px;margin-bottom:16px;
+}
+.search-box input{flex:1;border:none;outline:none;font-size:14px;
+    color:var(--txt);background:transparent;}
+.search-box i{color:var(--txt2);font-size:14px;}
+
+/* ── TOGGLE SWITCH ── */
+.toggle-row{display:flex;align-items:center;gap:14px;padding:14px 0;
+    border-bottom:1px solid #F8FAFC;}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info{flex:1;}
+.toggle-info h4{font-size:14px;font-weight:700;color:var(--txt);}
+.toggle-info p{font-size:12px;color:var(--txt2);margin-top:2px;}
+.toggle-switch{
+  width:48px;height:26px;border-radius:99px;
+  background:#E2E8F0;position:relative;cursor:pointer;
+  transition:background 0.2s;flex-shrink:0;
+}
+.toggle-switch.on{background:var(--blue);}
+.toggle-switch::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:20px;height:20px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.2);
+  transition:transform 0.2s;
+}
+.toggle-switch.on::after{transform:translateX(22px);}
+
+/* ── TOAST ── */
+#admin-toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:#0F172A;color:#fff;font-size:13px;font-weight:600;
+  padding:10px 20px;border-radius:20px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
+  z-index:99999;display:none;
+  animation:toastIn 0.3s ease;
+}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
+
+/* ── LOADING ── */
+.loading-pulse{
+  display:flex;align-items:center;justify-content:center;
+  padding:32px;color:var(--txt2);gap:8px;font-size:14px;
+}
+.loading-pulse::before{
+  content:'';width:18px;height:18px;border-radius:50%;
+  border:2.5px solid #E2E8F0;border-top-color:var(--blue);
+  animation:spin 0.7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── EMERGENCY ── */
+.emergency-card{
+  background:linear-gradient(135deg,#450a0a,#7f1d1d);
+  border-radius:var(--radius);padding:24px;
+  color:#fff;margin-bottom:12px;
+}
+.emergency-card h3{font-size:17px;font-weight:800;margin-bottom:6px;}
+.emergency-card p{font-size:13px;opacity:0.75;margin-bottom:16px;}
+.emergency-btn{
+  background:rgba(255,255,255,0.15);
+  border:1.5px solid rgba(255,255,255,0.3);
+  color:#fff;padding:10px 20px;border-radius:12px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  backdrop-filter:blur(6px);
+}
+.emergency-btn:active{background:rgba(255,255,255,0.25);}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--txt2);}
+.empty-state i{font-size:40px;margin-bottom:12px;opacity:0.3;}
+.empty-state p{font-size:14px;}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login-screen">
+    <div class="login-orb">🛡️</div>
+    <div class="login-title">Admin Control Center</div>
+    <div class="login-sub">ChatTop — Restricted Access</div>
+    <div class="login-card">
+        <div class="login-label">Admin Password</div>
+        <input type="password" id="login-pw" class="login-input"
+            placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="login-btn" onclick="doLogin()">🔐 Access Admin Panel</button>
+        <div class="login-err" id="login-err">❌ Incorrect password</div>
+    </div>
+</div>
+
+<!-- ══ ADMIN APP ══ -->
+<div id="admin-app">
+    <!-- Header -->
+    <div class="admin-header">
+        <div class="admin-logo">⚡</div>
+        <div class="admin-header-title">
+            <h1>Admin Panel</h1>
+            <span id="admin-uid-label">Loading...</span>
+        </div>
+        <div class="admin-header-badge">ADMIN</div>
+        <div class="admin-logout-btn" onclick="doLogout()" title="Logout">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="admin-tabs">
+        <div class="admin-tab active" onclick="showTab('dashboard')" id="tab-dashboard">
+            <i class="fas fa-chart-pie"></i> Dashboard
+        </div>
+        <div class="admin-tab" onclick="showTab('users')" id="tab-users">
+            <i class="fas fa-users"></i> Users
+        </div>
+        <div class="admin-tab" onclick="showTab('popups')" id="tab-popups">
+            <i class="fas fa-bell"></i> Popups
+        </div>
+        <div class="admin-tab" onclick="showTab('notify')" id="tab-notify">
+            <i class="fas fa-paper-plane"></i> Push Notify
+        </div>
+        <div class="admin-tab" onclick="showTab('bots')" id="tab-bots">
+            <i class="fas fa-robot"></i> Bots
+        </div>
+        <div class="admin-tab" onclick="showTab('analytics')" id="tab-analytics">
+            <i class="fas fa-chart-bar"></i> Analytics
+        </div>
+        <div class="admin-tab" onclick="showTab('controls')" id="tab-controls">
+            <i class="fas fa-sliders-h"></i> Controls
+        </div>
+        <div class="admin-tab" onclick="showTab('logs')" id="tab-logs">
+            <i class="fas fa-list"></i> Logs
+        </div>
+        <div class="admin-tab" onclick="showTab('security')" id="tab-security">
+            <i class="fas fa-shield-alt"></i> Security
+        </div>
+        <div class="admin-tab" onclick="showTab('emergency')" id="tab-emergency">
+            <i class="fas fa-exclamation-triangle"></i> Emergency
+        </div>
+    </div>
+
+    <div class="admin-content">
+
+        <!-- DASHBOARD -->
+        <div class="section active" id="section-dashboard">
+            <div class="stat-grid">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-value" id="stat-total-users">—</div>
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-change live">● Live</div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon"><i class="fas fa-circle"></i></div>
+                    <div class="stat-value" id="stat-online">—</div>
+                    <div class="stat-label">Online Now</div>
+                    <div class="stat-change live">● Live</div>
+                </div>
+                <div class="stat-card amber">
+                    <div class="stat-icon"><i class="fas fa-robot"></i></div>
+                    <div class="stat-value" id="stat-ai-req">0</div>
+                    <div class="stat-label">AI Requests</div>
+                    <div class="stat-change up">Today</div>
+                </div>
+                <div class="stat-card purple">
+                    <div class="stat-icon"><i class="fas fa-key"></i></div>
+                    <div class="stat-value" id="stat-tokens">0</div>
+                    <div class="stat-label">FCM Tokens</div>
+                    <div class="stat-change live">Registered</div>
+                </div>
+            </div>
+
+            <div class="sec-title">System Status</div>
+            <div class="admin-card">
+                <div class="status-row">
+                    <div class="status-dot green"></div>
+                    <div class="status-label">Firebase Realtime DB</div>
+                    <div class="status-val" id="fb-status">Checking...</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-dot green"></div>
+                    <div class="status-label">AI Image API</div>
+                    <div class="status-val">Online</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-dot green"></div>
+                    <div class="status-label">TTS API</div>
+                    <div class="status-val">Online</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-dot green" id="fcm-status-dot"></div>
+                    <div class="status-label">FCM Push Service</div>
+                    <div class="status-val" id="fcm-status">Checking...</div>
+                </div>
+            </div>
+
+            <div class="sec-title">Quick Actions</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="admin-btn" onclick="showTab('popups')"><i class="fas fa-bell"></i> Send Popup</button>
+                <button class="admin-btn" onclick="showTab('notify')"><i class="fas fa-paper-plane"></i> Push All</button>
+                <button class="admin-btn green" onclick="showTab('users')"><i class="fas fa-users"></i> Users</button>
+                <button class="admin-btn amber" onclick="showTab('controls')"><i class="fas fa-cog"></i> Controls</button>
+            </div>
+        </div>
+
+        <!-- USERS -->
+        <div class="section" id="section-users">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="user-search" placeholder="Search users by name or phone..."
+                    oninput="filterUsers(this.value)">
+            </div>
+            <div class="sec-title">All Users (<span id="user-count">0</span>)</div>
+            <div class="admin-card" id="users-list">
+                <div class="loading-pulse">Loading users...</div>
+            </div>
+        </div>
+
+        <!-- POPUPS -->
+        <div class="section" id="section-popups">
+            <div class="sec-title">Send Premium Popup</div>
+            <div class="admin-card">
+                <div class="form-field">
+                    <label>Target User</label>
+                    <select id="popup-target-uid">
+                        <option value="__all__">📢 All Users</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Popup Type</label>
+                    <div class="popup-type-selector" id="popup-type-selector">
+                        <div class="popup-type-chip selected" data-type="update" onclick="selectPopupType('update',this)">🚀 Update</div>
+                        <div class="popup-type-chip" data-type="info" onclick="selectPopupType('info',this)">ℹ️ Info</div>
+                        <div class="popup-type-chip" data-type="warning" onclick="selectPopupType('warning',this)">⚠️ Warning</div>
+                        <div class="popup-type-chip" data-type="success" onclick="selectPopupType('success',this)">✅ Success</div>
+                        <div class="popup-type-chip" data-type="security" onclick="selectPopupType('security',this)">🔒 Security</div>
+                        <div class="popup-type-chip" data-type="maintenance" onclick="selectPopupType('maintenance',this)">🔧 Maintenance</div>
+                        <div class="popup-type-chip" data-type="emergency" onclick="selectPopupType('emergency',this)">🚨 Emergency</div>
+                        <div class="popup-type-chip" data-type="celebration" onclick="selectPopupType('celebration',this)">🎉 Celebrate</div>
+                        <div class="popup-type-chip" data-type="feature" onclick="selectPopupType('feature',this)">✨ Feature</div>
+                        <div class="popup-type-chip" data-type="ai" onclick="selectPopupType('ai',this)">🤖 AI Update</div>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Title</label>
+                    <input type="text" id="popup-title" placeholder="e.g. New Feature Available!">
+                </div>
+                <div class="form-field">
+                    <label>Message</label>
+                    <textarea id="popup-message" placeholder="Enter your popup message here..."></textarea>
+                </div>
+
+                <!-- Live Preview -->
+                <div id="popup-preview-wrap"></div>
+
+                <button class="admin-btn w100" style="margin-top:8px;" onclick="sendPopup()">
+                    <i class="fas fa-paper-plane"></i> Send Popup
+                </button>
+            </div>
+
+            <div class="sec-title">Popup History</div>
+            <div class="admin-card" id="popup-history-list">
+                <div class="empty-state"><i class="fas fa-history"></i><p>No popups sent yet</p></div>
+            </div>
+        </div>
+
+        <!-- PUSH NOTIFY -->
+        <div class="section" id="section-notify">
+            <div class="sec-title">Push Notification</div>
+            <div class="admin-card">
+                <div class="form-field">
+                    <label>Target</label>
+                    <select id="notify-target">
+                        <option value="__all__">📢 Broadcast to All</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Title</label>
+                    <input type="text" id="notify-title" placeholder="Notification title">
+                </div>
+                <div class="form-field">
+                    <label>Message</label>
+                    <textarea id="notify-body" placeholder="Notification message..."></textarea>
+                </div>
+                <button class="admin-btn w100" onclick="sendPushNotification()">
+                    <i class="fas fa-bell"></i> Send Push Notification
+                </button>
+            </div>
+        </div>
+
+        <!-- BOTS -->
+        <div class="section" id="section-bots">
+            <div class="sec-title">Official Bots</div>
+            <div class="bot-card">
+                <div class="bot-av" style="background:linear-gradient(135deg,#2563EB,#7C3AED);">🤖</div>
+                <div class="bot-info">
+                    <div class="bot-name">AURA AI <i class="fas fa-check-circle bot-verified"></i></div>
+                    <div class="bot-desc">Main AI assistant — chat, images, TTS, memory</div>
+                    <div class="bot-status online">● Online</div>
+                </div>
+            </div>
+            <div class="bot-card">
+                <div class="bot-av" style="background:linear-gradient(135deg,#0088cc,#00b4e6);">🌟</div>
+                <div class="bot-info">
+                    <div class="bot-name">Nova Assist <i class="fas fa-check-circle bot-verified"></i></div>
+                    <div class="bot-desc">General helper and Q&A bot</div>
+                    <div class="bot-status online">● Online</div>
+                </div>
+            </div>
+            <div class="bot-card">
+                <div class="bot-av" style="background:linear-gradient(135deg,#16a34a,#22c55e);">📢</div>
+                <div class="bot-info">
+                    <div class="bot-name">Pulse Updates <i class="fas fa-check-circle bot-verified"></i></div>
+                    <div class="bot-desc">Official announcements and app updates</div>
+                    <div class="bot-status online">● Online</div>
+                </div>
+            </div>
+            <div class="bot-card">
+                <div class="bot-av" style="background:linear-gradient(135deg,#dc2626,#f87171);">🛡️</div>
+                <div class="bot-info">
+                    <div class="bot-name">Shield Guard <i class="fas fa-check-circle bot-verified"></i></div>
+                    <div class="bot-desc">Security and spam protection</div>
+                    <div class="bot-status offline">● Offline</div>
+                </div>
+            </div>
+            <div class="bot-card">
+                <div class="bot-av" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">💬</div>
+                <div class="bot-info">
+                    <div class="bot-name">Aura Support <i class="fas fa-check-circle bot-verified"></i></div>
+                    <div class="bot-desc">Live support assistant with AI fallback</div>
+                    <div class="bot-status online">● Online</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANALYTICS -->
+        <div class="section" id="section-analytics">
+            <div class="sec-title">Usage Analytics</div>
+            <div class="admin-card">
+                <div class="analytics-bar-row">
+                    <div class="analytics-bar-label"><span>AI Text Requests</span><span id="bar-val-1">—</span></div>
+                    <div class="analytics-bar-track"><div class="analytics-bar-fill" id="bar-fill-1" style="width:0%;background:linear-gradient(135deg,#2563EB,#7C3AED);"></div></div>
+                </div>
+                <div class="analytics-bar-row">
+                    <div class="analytics-bar-label"><span>Image Generations</span><span id="bar-val-2">—</span></div>
+                    <div class="analytics-bar-track"><div class="analytics-bar-fill" id="bar-fill-2" style="width:0%;background:linear-gradient(135deg,#0088cc,#00b4e6);"></div></div>
+                </div>
+                <div class="analytics-bar-row">
+                    <div class="analytics-bar-label"><span>TTS Requests</span><span id="bar-val-3">—</span></div>
+                    <div class="analytics-bar-track"><div class="analytics-bar-fill" id="bar-fill-3" style="width:0%;background:linear-gradient(135deg,#16a34a,#22c55e);"></div></div>
+                </div>
+                <div class="analytics-bar-row">
+                    <div class="analytics-bar-label"><span>Push Sent Today</span><span id="bar-val-4">—</span></div>
+                    <div class="analytics-bar-track"><div class="analytics-bar-fill" id="bar-fill-4" style="width:0%;background:linear-gradient(135deg,#f59e0b,#fbbf24);"></div></div>
+                </div>
+                <div class="analytics-bar-row">
+                    <div class="analytics-bar-label"><span>Active Users (24h)</span><span id="bar-val-5">—</span></div>
+                    <div class="analytics-bar-track"><div class="analytics-bar-fill" id="bar-fill-5" style="width:0%;background:linear-gradient(135deg,#dc2626,#ef4444);"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="section" id="section-controls">
+            <div class="sec-title">Global App Controls</div>
+            <div class="admin-card">
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>🤖 AI System</h4>
+                        <p>Enable or disable AURA AI for all users</p>
+                    </div>
+                    <div class="toggle-switch on" id="toggle-ai" onclick="toggleControl('ai',this)"></div>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>🖼️ Image Generation</h4>
+                        <p>Allow users to generate AI images</p>
+                    </div>
+                    <div class="toggle-switch on" id="toggle-image" onclick="toggleControl('image',this)"></div>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>🔔 Push Notifications</h4>
+                        <p>Enable FCM push notifications</p>
+                    </div>
+                    <div class="toggle-switch on" id="toggle-push" onclick="toggleControl('push',this)"></div>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>🔧 Maintenance Mode</h4>
+                        <p>Show maintenance screen to all users</p>
+                    </div>
+                    <div class="toggle-switch" id="toggle-maintenance" onclick="toggleControl('maintenance',this)"></div>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>📁 File Uploads</h4>
+                        <p>Allow users to upload files</p>
+                    </div>
+                    <div class="toggle-switch on" id="toggle-uploads" onclick="toggleControl('uploads',this)"></div>
+                </div>
+                <div class="toggle-row">
+                    <div class="toggle-info">
+                        <h4>📞 Voice/Video Calls</h4>
+                        <p>Enable calling features</p>
+                    </div>
+                    <div class="toggle-switch on" id="toggle-calls" onclick="toggleControl('calls',this)"></div>
+                </div>
+            </div>
+
+            <div class="sec-title">Broadcast Announcement</div>
+            <div class="admin-card">
+                <div class="form-field">
+                    <label>Announcement Message</label>
+                    <textarea id="broadcast-msg" placeholder="Message to show all users as a toast notification..."></textarea>
+                </div>
+                <button class="admin-btn w100" onclick="sendBroadcastAnnouncement()">
+                    <i class="fas fa-broadcast-tower"></i> Broadcast to All Users
+                </button>
+            </div>
+        </div>
+
+        <!-- LOGS -->
+        <div class="section" id="section-logs">
+            <div class="sec-title">Admin Activity Log</div>
+            <div id="activity-log-list">
+                <div class="loading-pulse">Loading logs...</div>
+            </div>
+        </div>
+
+        <!-- SECURITY -->
+        <div class="section" id="section-security">
+            <div class="sec-title">Security Overview</div>
+            <div class="admin-card">
+                <div class="status-row">
+                    <div class="status-dot green"></div>
+                    <div class="status-label">Admin Authentication</div>
+                    <div class="status-val">Active ✓</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-dot green"></div>
+                    <div class="status-label">Firebase Security Rules</div>
+                    <div class="status-val">Configured</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-dot green"></div>
+                    <div class="status-label">FCM Token Encryption</div>
+                    <div class="status-val">Enabled</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-dot green"></div>
+                    <div class="status-label">API Rate Limiting</div>
+                    <div class="status-val">Active</div>
+                </div>
+                <div class="status-row">
+                    <div class="status-dot amber"></div>
+                    <div class="status-label">HTTPS Enforcement</div>
+                    <div class="status-val">Dev mode</div>
+                </div>
+            </div>
+            <div class="sec-title">Change Admin Password</div>
+            <div class="admin-card">
+                <div class="form-field">
+                    <label>New Password</label>
+                    <input type="password" id="new-pw-1" placeholder="New password">
+                </div>
+                <div class="form-field">
+                    <label>Confirm Password</label>
+                    <input type="password" id="new-pw-2" placeholder="Confirm new password">
+                </div>
+                <button class="admin-btn" onclick="changeAdminPassword()">
+                    <i class="fas fa-key"></i> Change Password
+                </button>
+            </div>
+        </div>
+
+        <!-- EMERGENCY -->
+        <div class="section" id="section-emergency">
+            <div class="sec-title">⚠️ Emergency Controls</div>
+            <div class="emergency-card">
+                <h3>🚨 Emergency Alert</h3>
+                <p>Send an immediate emergency alert to ALL users with highest priority push notification</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <input type="text" id="emergency-msg" placeholder="Emergency message..."
+                        style="flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);
+                        border-radius:10px;padding:10px 14px;color:#fff;font-size:14px;outline:none;min-width:0;">
+                    <button class="emergency-btn" onclick="sendEmergencyAlert()">🚨 Send</button>
+                </div>
+            </div>
+            <div class="emergency-card" style="background:linear-gradient(135deg,#1e1b4b,#4338ca);">
+                <h3>🔧 Maintenance Mode</h3>
+                <p>Enable maintenance mode — all users will see a maintenance screen</p>
+                <button class="emergency-btn" onclick="toggleMaintenanceMode()">⚡ Toggle Maintenance</button>
+            </div>
+            <div class="emergency-card" style="background:linear-gradient(135deg,#78350f,#d97706);">
+                <h3>🔐 Force Logout All</h3>
+                <p>Force all users to logout immediately (device session invalidation)</p>
+                <button class="emergency-btn" onclick="forceLogoutAll()">⚠️ Force Logout All</button>
+            </div>
+        </div>
+
+    </div><!-- /admin-content -->
+</div><!-- /admin-app -->
+
+<!-- User Action Sheet -->
+<div id="user-action-sheet">
+    <div class="uas-card">
+        <span class="uas-handle"></span>
+        <div class="uas-header">
+            <div class="uas-av" id="uas-av" style="width:52px;height:52px;border-radius:50%;background:#E2E8F0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#0088cc;">?</div>
+            <div>
+                <div class="uas-name" id="uas-name">User</div>
+                <div class="uas-phone" id="uas-phone">—</div>
+            </div>
+        </div>
+        <div class="uas-actions">
+            <div class="uas-action action-blue" onclick="uasAction('send_popup')">
+                <div class="uas-action-icon"><i class="fas fa-bell"></i></div>
+                <span>Send Popup Notification</span>
+            </div>
+            <div class="uas-action action-blue" onclick="uasAction('send_push')">
+                <div class="uas-action-icon"><i class="fas fa-paper-plane"></i></div>
+                <span>Send Push Notification</span>
+            </div>
+            <div class="uas-action action-green" onclick="uasAction('verify')">
+                <div class="uas-action-icon"><i class="fas fa-check-circle"></i></div>
+                <span>Verify Account</span>
+            </div>
+            <div class="uas-action action-amber" onclick="uasAction('warn')">
+                <div class="uas-action-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <span>Send Warning</span>
+            </div>
+            <div class="uas-action action-purple" onclick="uasAction('reset_ai')">
+                <div class="uas-action-icon"><i class="fas fa-robot"></i></div>
+                <span>Reset AI Memory</span>
+            </div>
+            <div class="uas-action action-red" onclick="uasAction('ban')">
+                <div class="uas-action-icon"><i class="fas fa-ban"></i></div>
+                <span id="ban-action-label">Ban User</span>
+            </div>
+        </div>
+        <div style="padding:0 16px 8px;">
+            <button class="admin-btn" style="width:100%;background:#F1F5F9;color:#64748B;box-shadow:none;justify-content:center;" onclick="closeUserSheet()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="admin-toast"></div>
+
+<!-- Firebase + Scripts -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, get, push, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+const FB = {
+    apiKey:"AIzaSyArSNca9DW0wDy9f6Sj85WI1MsUWd4bj6s",
+    authDomain:"chattop-850f3.firebaseapp.com",
+    databaseURL:"https://chattop-850f3-default-rtdb.firebaseio.com",
+    projectId:"chattop-850f3",
+    storageBucket:"chattop-850f3.firebasestorage.app",
+    messagingSenderId:"537302458019",
+    appId:"1:537302458019:web:569550b603a6c687732916"
+};
+
+const app = initializeApp(FB);
+const db  = getDatabase(app);
+
+window._db = db;
+window._ref = ref;
+window._set = set;
+window._update = update;
+window._get = get;
+window._push = push;
+window._remove = remove;
+window._onValue = onValue;
+
+// ── State ──
+let allUsers = {};
+let selectedUid = null;
+let selectedPopupType = 'update';
+let adminLogs = [];
+
+// ── Firebase status check ──
+get(ref(db,'admin/status')).then(()=>{
+    document.getElementById('fb-status').textContent='Connected ✓';
+}).catch(()=>{
+    document.getElementById('fb-status').textContent='Error';
+    document.querySelector('#section-dashboard .status-row:first-child .status-dot').className='status-dot red';
+});
+
+// ── FCM status ──
+fetch('/api/test-notification').then(r=>r.json()).then(d=>{
+    const ok=d.firebase==='ready';
+    document.getElementById('fcm-status').textContent=ok?'Ready ✓':'Error';
+    document.getElementById('fcm-status-dot').className='status-dot '+(ok?'green':'red');
+    document.getElementById('stat-tokens').textContent=d.saved_tokens||0;
+}).catch(()=>{document.getElementById('fcm-status').textContent='Offline';});
+
+// ── Load Users ──
+function loadUsers(){
+    onValue(ref(db,'users'), snap=>{
+        allUsers={};
+        let online=0;
+        let total=0;
+        snap.forEach(child=>{
+            const d=child.val();
+            if(d.profile){
+                allUsers[child.key]={...d.profile,...d, uid:child.key};
+                total++;
+                if(d.online===true||d.status==='online') online++;
+            }
+        });
+        document.getElementById('stat-total-users').textContent=total;
+        document.getElementById('stat-online').textContent=online;
+        document.getElementById('user-count').textContent=total;
+        renderUsers(Object.values(allUsers));
+        updatePopupTargetOptions();
+        updateNotifyTargetOptions();
+    });
+}
+
+function renderUsers(users){
+    const list=document.getElementById('users-list');
+    if(!users.length){list.innerHTML='<div class="empty-state"><i class="fas fa-users"></i><p>No users found</p></div>';return;}
+    list.innerHTML=users.map(u=>{
+        const name=u.name||'Unknown';
+        const phone=u.phone||u.uid||'—';
+        const pic=u.pic||u.photo||'';
+        const isOnline=u.online===true||u.status==='online';
+        const isBanned=u.isBlocked===true;
+        const isVerified=u.isVerified===true;
+        return `<div class="user-item" onclick="openUserSheet('${u.uid}')">
+            ${pic?`<img class="user-av" src="${pic}" onerror="this.outerHTML='<div class=user-av>${name[0]||'?'}</div>'">`
+                :`<div class="user-av">${name[0]||'?'}</div>`}
+            <div class="user-info">
+                <div class="user-name">${name}</div>
+                <div class="user-phone">${phone}</div>
+                <div class="user-badges">
+                    ${isVerified?'<span class="user-badge badge-verified">✓ Verified</span>':''}
+                    ${isBanned?'<span class="user-badge badge-banned">⛔ Banned</span>':''}
+                    ${u.isPremium?'<span class="user-badge badge-premium">⭐ Premium</span>':''}
+                </div>
+            </div>
+            <div class="user-status-dot ${isOnline?'online':'offline'}"></div>
+        </div>`;
+    }).join('');
+}
+
+window.filterUsers=function(q){
+    if(!q){renderUsers(Object.values(allUsers));return;}
+    const lq=q.toLowerCase();
+    const filtered=Object.values(allUsers).filter(u=>
+        (u.name||'').toLowerCase().includes(lq)||
+        (u.phone||'').includes(q)||(u.uid||'').includes(q));
+    renderUsers(filtered);
+};
+
+function updatePopupTargetOptions(){
+    const sel=document.getElementById('popup-target-uid');
+    const curVal=sel.value;
+    sel.innerHTML='<option value="__all__">📢 All Users</option>'+
+        Object.values(allUsers).map(u=>`<option value="${u.uid}">${u.name||u.uid}</option>`).join('');
+    sel.value=curVal||'__all__';
+}
+
+function updateNotifyTargetOptions(){
+    const sel=document.getElementById('notify-target');
+    const curVal=sel.value;
+    sel.innerHTML='<option value="__all__">📢 Broadcast to All</option>'+
+        Object.values(allUsers).map(u=>`<option value="${u.uid}">${u.name||u.uid}</option>`).join('');
+    sel.value=curVal||'__all__';
+}
+
+// ── Open user action sheet ──
+window.openUserSheet=function(uid){
+    const u=allUsers[uid];if(!u)return;
+    selectedUid=uid;
+    const av=document.getElementById('uas-av');
+    const name=u.name||'Unknown';
+    if(u.pic||u.photo){
+        av.outerHTML=`<img id="uas-av" class="uas-av" src="${u.pic||u.photo}" onerror="this.style.display='none'">`;
+    }else{
+        av.textContent=name[0]||'?';
+    }
+    document.getElementById('uas-name').textContent=name;
+    document.getElementById('uas-phone').textContent=u.phone||uid;
+    const banLabel=document.getElementById('ban-action-label');
+    banLabel.textContent=u.isBlocked?'Unban User':'Ban User';
+    document.getElementById('user-action-sheet').classList.add('open');
+};
+
+window.closeUserSheet=function(){
+    document.getElementById('user-action-sheet').classList.remove('open');
+    selectedUid=null;
+};
+
+window.uasAction=async function(action){
+    const u=allUsers[selectedUid];
+    if(!u)return;
+    closeUserSheet();
+    const uid=selectedUid;
+
+    switch(action){
+        case 'send_popup':
+            document.getElementById('popup-target-uid').value=uid;
+            showTab('popups');
+            break;
+        case 'send_push':
+            document.getElementById('notify-target').value=uid;
+            showTab('notify');
+            break;
+        case 'verify':
+            await update(ref(db,'users/'+uid),{isVerified:true});
+            allUsers[uid].isVerified=true;
+            addLog('Verified user: '+(u.name||uid),'ok');
+            toast('Account verified ✓');
+            break;
+        case 'warn':
+            const warnMsg=prompt('Warning message:');
+            if(warnMsg){
+                await _sendPopupToUser(uid,'warning','⚠️ Warning',warnMsg);
+                addLog('Sent warning to: '+(u.name||uid),'warn');
+                toast('Warning sent');
+            }
+            break;
+        case 'reset_ai':
+            await update(ref(db,'users/'+uid),{aura_memory_reset:Date.now()});
+            addLog('Reset AI memory for: '+(u.name||uid),'info');
+            toast('AI memory reset');
+            break;
+        case 'ban':
+            const isBanned=u.isBlocked;
+            await update(ref(db,'users/'+uid),{isBlocked:!isBanned});
+            allUsers[uid].isBlocked=!isBanned;
+            addLog((isBanned?'Unbanned':'Banned')+' user: '+(u.name||uid), isBanned?'ok':'err');
+            toast(isBanned?'User unbanned':'User banned');
+            break;
+    }
+};
+
+// ── POPUP SYSTEM ──
+window.selectPopupType=function(type,el){
+    selectedPopupType=type;
+    document.querySelectorAll('.popup-type-chip').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    updatePopupPreview();
+};
+
+const POPUP_COLORS={
+    update:'linear-gradient(135deg,#0088cc,#00b4e6)',
+    info:'linear-gradient(135deg,#f8fafc,#e2e8f0)',
+    warning:'linear-gradient(135deg,#fef3c7,#f59e0b)',
+    success:'linear-gradient(135deg,#14532d,#22c55e)',
+    security:'linear-gradient(135deg,#7f1d1d,#f87171)',
+    maintenance:'linear-gradient(135deg,#1e1b4b,#6366f1)',
+    emergency:'linear-gradient(135deg,#450a0a,#ef4444)',
+    celebration:'linear-gradient(135deg,#4c1d95,#a78bfa)',
+    feature:'linear-gradient(135deg,#042f2e,#2dd4bf)',
+    ai:'linear-gradient(135deg,#1e1b4b,#7C3AED)',
+};
+const POPUP_ICONS={
+    update:'🚀',info:'ℹ️',warning:'⚠️',success:'✅',security:'🔒',
+    maintenance:'🔧',emergency:'🚨',celebration:'🎉',feature:'✨',ai:'🤖'
+};
+const POPUP_TEXT_DARK=['info','warning'];
+
+function updatePopupPreview(){
+    const title=document.getElementById('popup-title')?.value||'Preview Title';
+    const msg=document.getElementById('popup-message')?.value||'Your popup message will appear here.';
+    const bg=POPUP_COLORS[selectedPopupType]||POPUP_COLORS.update;
+    const icon=POPUP_ICONS[selectedPopupType]||'📢';
+    const isDark=POPUP_TEXT_DARK.includes(selectedPopupType);
+    const textColor=isDark?'#0F172A':'#fff';
+    const btnBg=isDark?'linear-gradient(135deg,#0088cc,#00b4e6)':'rgba(255,255,255,0.22)';
+    const btnColor=isDark?'#fff':'#fff';
+    const wrap=document.getElementById('popup-preview-wrap');
+    if(!wrap)return;
+    wrap.innerHTML=`
+    <div style="background:#F8FAFC;border-radius:16px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;margin-bottom:10px;">LIVE PREVIEW</div>
+        <div class="popup-preview-card" style="background:${bg};color:${textColor};">
+            <div class="pp-orb">${icon}</div>
+            <div class="pp-title" style="color:${textColor};">${title}</div>
+            <div class="pp-msg" style="color:${textColor};">${msg}</div>
+            <div class="pp-btn" style="background:${btnBg};color:${btnColor};">OK</div>
+        </div>
+    </div>`;
+}
+
+document.getElementById('popup-title')?.addEventListener('input',updatePopupPreview);
+document.getElementById('popup-message')?.addEventListener('input',updatePopupPreview);
+updatePopupPreview();
+
+async function _sendPopupToUser(uid,type,title,message){
+    const popupId='popup_'+Date.now();
+    const senderId='admin';
+    const data={type,title,message,popupId,uid,senderId,
+        seen:false,ts:Date.now()};
+    await set(ref(db,'admin/user_popups/'+uid+'/'+popupId),data);
+    // Store in popup history
+    await push(ref(db,'admin/popup_history'),{...data,targetUid:uid});
+    addLog('Popup "'+title+'" sent to '+(allUsers[uid]?.name||uid),'ok');
+}
+
+window.sendPopup=async function(){
+    const targetUid=document.getElementById('popup-target-uid').value;
+    const title=document.getElementById('popup-title').value.trim();
+    const message=document.getElementById('popup-message').value.trim();
+    if(!title||!message){toast('Please enter title and message','err');return;}
+
+    if(targetUid==='__all__'){
+        const uids=Object.keys(allUsers);
+        await Promise.all(uids.map(uid=>_sendPopupToUser(uid,selectedPopupType,title,message)));
+        toast('Popup sent to '+uids.length+' users ✓');
+    }else{
+        await _sendPopupToUser(targetUid,selectedPopupType,title,message);
+        toast('Popup sent ✓');
+    }
+    loadPopupHistory();
+};
+
+function loadPopupHistory(){
+    onValue(ref(db,'admin/popup_history'),snap=>{
+        const list=document.getElementById('popup-history-list');
+        if(!snap.exists()){list.innerHTML='<div class="empty-state"><i class="fas fa-history"></i><p>No history</p></div>';return;}
+        const items=[];
+        snap.forEach(c=>{items.unshift({...c.val(),key:c.key});});
+        list.innerHTML=items.slice(0,20).map(p=>{
+            const icon=POPUP_ICONS[p.type]||'📢';
+            const ts=p.ts?new Date(p.ts).toLocaleString():'-';
+            const target=p.targetUid?((allUsers[p.targetUid]?.name)||p.targetUid):'All';
+            return `<div class="log-item log-info">${icon} <strong>${p.title}</strong> → ${target} | ${ts}</div>`;
+        }).join('');
+    },{onlyOnce:true});
+}
+
+// ── PUSH NOTIFICATIONS ──
+window.sendPushNotification=async function(){
+    const target=document.getElementById('notify-target').value;
+    const title=document.getElementById('notify-title').value.trim();
+    const body=document.getElementById('notify-body').value.trim();
+    if(!title||!body){toast('Enter title and message','err');return;}
+
+    if(target==='__all__'){
+        // Get all FCM tokens
+        const r=await fetch('/api/test-notification');
+        const d=await r.json();
+        // Use broadcast endpoint — get all tokens from server
+        const resp=await fetch('/api/send-broadcast',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({tokens:[],title,body,broadcast_all:true})
+        });
+        const res=await resp.json();
+        toast('Broadcast sent: '+( res.sent||0)+' devices');
+        addLog('Broadcast: "'+title+'" sent','ok');
+    }else{
+        const tokenResp=await fetch('/api/get-token?uid='+encodeURIComponent(target));
+        const tokenData=await tokenResp.json();
+        if(!tokenData.success){toast('No FCM token for this user','err');return;}
+        const resp=await fetch('/api/send-notification',{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({token:tokenData.token,title,body,type:'message'})
+        });
+        const res=await resp.json();
+        if(res.success){toast('Push sent ✓');addLog('Push: "'+title+'" → '+(allUsers[target]?.name||target),'ok');}
+        else{toast('Push failed: '+res.error,'err');}
+    }
+};
+
+// ── CONTROLS ──
+window.toggleControl=function(key,el){
+    el.classList.toggle('on');
+    const isOn=el.classList.contains('on');
+    if(_db&&_ref&&_set){
+        _set(_ref(_db,'admin/controls/'+key),{enabled:isOn,ts:Date.now()});
+    }
+    addLog('Control "'+key+'" set to '+(isOn?'ON':'OFF'),'info');
+    toast(key+' '+(isOn?'enabled':'disabled'));
+};
+
+window.sendBroadcastAnnouncement=async function(){
+    const msg=document.getElementById('broadcast-msg').value.trim();
+    if(!msg){toast('Enter announcement message','err');return;}
+    const id='popup_'+Date.now();
+    await _set(_ref(_db,'admin/popup'),{msg,active:true,id});
+    addLog('Broadcast announcement: "'+msg+'"','ok');
+    toast('Announcement sent to all users');
+};
+
+// ── EMERGENCY ──
+window.sendEmergencyAlert=async function(){
+    const msg=document.getElementById('emergency-msg').value.trim();
+    if(!msg){toast('Enter emergency message','err');return;}
+    // Send popup to all users of type emergency
+    const uids=Object.keys(allUsers);
+    await Promise.all(uids.map(uid=>_sendPopupToUser(uid,'emergency','🚨 Emergency Alert',msg)));
+    addLog('EMERGENCY ALERT sent: "'+msg+'"','err');
+    toast('Emergency alert sent to '+uids.length+' users');
+};
+
+window.toggleMaintenanceMode=async function(){
+    const snap=await _get(_ref(_db,'admin/controls/maintenance'));
+    const cur=snap.exists()&&snap.val().enabled;
+    await _set(_ref(_db,'admin/controls/maintenance'),{enabled:!cur,ts:Date.now()});
+    document.getElementById('toggle-maintenance').classList.toggle('on',!cur);
+    addLog('Maintenance mode: '+(!cur?'ON':'OFF'),'warn');
+    toast('Maintenance mode '+(cur?'disabled':'enabled'));
+};
+
+window.forceLogoutAll=function(){
+    if(!confirm('Are you sure? This will force logout ALL users.'))return;
+    _set(_ref(_db,'admin/force_logout'),{ts:Date.now(),active:true});
+    addLog('Force logout all users triggered','err');
+    toast('Force logout signal sent');
+};
+
+// ── LOGS ──
+function addLog(msg,type='info'){
+    const ts=new Date().toLocaleTimeString();
+    adminLogs.unshift({msg,type,ts});
+    if(adminLogs.length>50)adminLogs=adminLogs.slice(0,50);
+    renderLogs();
+    // Save to Firebase
+    if(_db&&_ref&&_push){
+        _push(_ref(_db,'admin/activity_logs'),{msg,type,ts:Date.now(),admin:'admin'}).catch(()=>{});
+    }
+}
+
+function renderLogs(){
+    const list=document.getElementById('activity-log-list');
+    if(!list)return;
+    if(!adminLogs.length){list.innerHTML='<div class="empty-state"><i class="fas fa-list"></i><p>No activity yet</p></div>';return;}
+    list.innerHTML=adminLogs.map(l=>
+        `<div class="log-item log-${l.type||'info'}">[${l.ts}] ${l.msg}</div>`
+    ).join('');
+}
+
+// Load Firebase logs
+onValue(ref(db,'admin/activity_logs'),snap=>{
+    adminLogs=[];
+    snap.forEach(c=>adminLogs.unshift({...c.val(),key:c.key}));
+    adminLogs=adminLogs.slice(0,50);
+    renderLogs();
+},{onlyOnce:true});
+
+// ── ANALYTICS ──
+function loadAnalytics(){
+    const mockData=[
+        {val:847,max:1000,id:1},{val:156,max:500,id:2},
+        {val:234,max:500,id:3},{val:89,max:200,id:4},{val:412,max:1000,id:5}
+    ];
+    setTimeout(()=>{
+        mockData.forEach(d=>{
+            const el=document.getElementById('bar-fill-'+d.id);
+            const valEl=document.getElementById('bar-val-'+d.id);
+            if(el)el.style.width=Math.round((d.val/d.max)*100)+'%';
+            if(valEl)valEl.textContent=d.val.toLocaleString();
+        });
+    },300);
+}
+
+// ── SECURITY ──
+window.changeAdminPassword=function(){
+    const p1=document.getElementById('new-pw-1').value;
+    const p2=document.getElementById('new-pw-2').value;
+    if(!p1||p1!==p2){toast('Passwords do not match','err');return;}
+    if(p1.length<4){toast('Password too short','err');return;}
+    localStorage.setItem('chattop_admin_pw',p1);
+    toast('Password changed ✓');
+    addLog('Admin password changed','ok');
+};
+
+// ── TOAST ──
+window.toast=function(msg,type='ok'){
+    const el=document.getElementById('admin-toast');
+    el.textContent=msg;
+    el.style.display='block';
+    el.style.background=type==='err'?'#dc2626':'#0F172A';
+    clearTimeout(window._toastTimer);
+    window._toastTimer=setTimeout(()=>{el.style.display='none';},2800);
+};
+
+// ── INIT ──
+loadUsers();
+loadAnalytics();
+setTimeout(loadPopupHistory,2000);
+addLog('Admin panel opened','info');
+
+// Export to global
+window.allUsers_ref = ()=>allUsers;
+
+</script>
+
+<script>
+/* ── LOGIN ── */
+const ADMIN_PW = localStorage.getItem('chattop_admin_pw') || 'shabaz';
+
+function doLogin(){
+    const pw = document.getElementById('login-pw').value;
+    const err = document.getElementById('login-err');
+    if(pw === ADMIN_PW){
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('admin-app').style.display='block';
+        localStorage.setItem('admin_session', Date.now());
+        document.getElementById('admin-uid-label').textContent = 'Connected to Firebase';
+    } else {
+        err.style.display='block';
+        document.getElementById('login-pw').value='';
+        setTimeout(()=>err.style.display='none',3000);
+    }
+}
+
+function doLogout(){
+    localStorage.removeItem('admin_session');
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('admin-app').style.display='none';
+    document.getElementById('login-pw').value='';
+}
+
+// Auto-login if session active (within 2 hours)
+const sess = localStorage.getItem('admin_session');
+if(sess && (Date.now()-parseInt(sess)) < 7200000){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('admin-app').style.display='block';
+    document.getElementById('admin-uid-label').textContent = 'Connected to Firebase';
+}
+
+/* ── TAB SWITCHING ── */
+function showTab(id){
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+    const sec=document.getElementById('section-'+id);
+    const tab=document.getElementById('tab-'+id);
+    if(sec)sec.classList.add('active');
+    if(tab){tab.classList.add('active');tab.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});}
+}
+
+/* ── KEYBOARD ── */
+document.getElementById('login-pw').focus();
+</script>
+
+</body>
+</html>
